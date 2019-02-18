@@ -5,11 +5,88 @@ let defaultTextColor = '#fff';
 let defaultStyle = {
   color: defaultTextColor,
 };
-class Aggregate extends Component {
+
+let fakeServerData = {
+  user: {
+    name: 'Natália',
+    playlists: [
+      {
+        name: 'My favorites',
+        songs: [
+          {
+            name: 'Bla bla',
+            duration: 12314,
+          },
+          {
+            name: 'Bla bla2',
+            duration: 243231,
+          }
+        ],
+      },
+      {
+        name: 'My favorites2',
+        songs: [
+          {
+            name: 'Bla bla3',
+            duration: 123123,
+          },
+          {
+            name: 'Bla bla4',
+            duration: 2833,
+          }
+        ],
+      },
+      {
+        name: 'My favorites3',
+        songs: [
+          {
+            name: 'Bla bla4',
+            duration: 123123,
+          },
+          {
+            name: 'Bla bla5',
+            duration: 2833,
+          }
+        ],
+      },
+      {
+        name: 'My favorites4',
+        songs: [
+          {
+            name: 'Bla bla6',
+            duration: 12323,
+          },
+          {
+            name: 'Bla bla7',
+            duration: 28333,
+          }
+        ],
+      },
+    ]
+  }
+};
+class PlaylistCounter extends Component {
   render() {
     return(
       <div style={{ ...defaultStyle, width: '40%', display: 'inline-block' }}>
-        <h2>Number Text</h2>
+        <h2>{this.props.playlists.length} playlists</h2>
+      </div>
+    );
+  }
+}
+
+class HoursCounter extends Component {
+  render() {
+    let allSongs = this.props.playlists.reduce((songs, eachPlaylist) => {
+      return songs.concat(eachPlaylist.songs);
+    }, []);
+    let totalDuration = allSongs.reduce((sum, eachSong) => {
+      return sum + eachSong.duration;
+    }, 0);
+
+    return (
+      <div style={{ ...defaultStyle, width: '40%', display: 'inline-block' }}>
+        <h2>{Math.round(totalDuration/60)} hours</h2>
       </div>
     );
   }
@@ -45,18 +122,52 @@ class Playlist extends Component {
   }
 }
 class App extends Component {
+  constructor() {
+    super();
+    this.state = { serverData: {}};
+  }
+
+  componentDidMount() {
+    setTimeout(() => {
+      this.setState({
+        serverData: fakeServerData,
+      });
+    }, 1000);
+  }
+
   render() {
     return (
       <div className="App">
-        <h1 style={{ ...defaultStyle, 'font-size': '54px' }}>Title</h1>
-        <Aggregate />
-        <Aggregate />
-        <Filter />
-        <Playlist />
-        <Playlist />
-        <Playlist />
-        <Playlist />
-        <Playlist />
+        {
+          this.state.serverData.user ?
+          <div>
+            <h1 style={{ ...defaultStyle, fontSize: '54px' }}>
+              {this.state.serverData.user.name} Playlist
+            </h1>
+            <PlaylistCounter
+              playlists={
+                this.state.serverData.user &&
+                this.state.serverData.user.playlists
+              }
+            />
+            <HoursCounter
+              playlists={
+                this.state.serverData.user &&
+                this.state.serverData.user.playlists
+              }
+            />
+            <Filter />
+            <Playlist />
+            <Playlist />
+            <Playlist />
+            <Playlist />
+            <Playlist />
+          </div>
+          :
+          <h1 style={defaultStyle}>
+            Loading...
+          </h1>
+        }
       </div>
     );
   }
