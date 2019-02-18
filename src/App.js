@@ -67,9 +67,10 @@ let fakeServerData = {
 };
 class PlaylistCounter extends Component {
   render() {
+    const { playlists } = this.props;
     return(
       <div style={{ ...defaultStyle, width: '40%', display: 'inline-block' }}>
-        <h2>{this.props.playlists.length} playlists</h2>
+        <h2>{playlists.length} playlists</h2>
       </div>
     );
   }
@@ -77,7 +78,8 @@ class PlaylistCounter extends Component {
 
 class HoursCounter extends Component {
   render() {
-    let allSongs = this.props.playlists.reduce((songs, eachPlaylist) => {
+    const { playlists } = this.props;
+    let allSongs = playlists.reduce((songs, eachPlaylist) => {
       return songs.concat(eachPlaylist.songs);
     }, []);
     let totalDuration = allSongs.reduce((sum, eachSong) => {
@@ -94,10 +96,11 @@ class HoursCounter extends Component {
 
 class Filter extends Component {
   render() {
+    const { onTextChange } = this.props;
     return(
       <div style={{ ...defaultStyle }}>
         <img src="" />
-        <input type="text" />
+        <input type="text" onKeyUp={(event) => onTextChange(event.target.value)} />
       </div>
     );
   }
@@ -105,7 +108,7 @@ class Filter extends Component {
 
 class Playlist extends Component {
   render() {
-    let playlist = this.props.playlist;
+    const { playlist } = this.props
     return(
       <div style={{ ...defaultStyle, width: '25%', display: 'inline-block' }}>
         <img />
@@ -122,7 +125,10 @@ class Playlist extends Component {
 class App extends Component {
   constructor() {
     super();
-    this.state = { serverData: {}};
+    this.state = {
+      serverData: {},
+      filterString: '',
+    };
   }
 
   componentDidMount() {
@@ -131,33 +137,45 @@ class App extends Component {
         serverData: fakeServerData,
       });
     }, 1000);
+    setTimeout(() => {
+      this.setState({
+        filterString: '',
+      });
+    }, 2000);
   }
 
   render() {
+    const { serverData } = this.state;
     return (
       <div className="App">
         {
-          this.state.serverData.user ?
+          serverData.user ?
           <div>
             <h1 style={{ ...defaultStyle, fontSize: '54px' }}>
-              {this.state.serverData.user.name} Playlist
+              {serverData.user.name} Playlist
             </h1>
             <PlaylistCounter
               playlists={
-                this.state.serverData.user &&
-                this.state.serverData.user.playlists
+                serverData.user &&
+                serverData.user.playlists
               }
             />
             <HoursCounter
               playlists={
-                this.state.serverData.user &&
-                this.state.serverData.user.playlists
+                serverData.user &&
+                serverData.user.playlists
               }
             />
-            <Filter />
-            {this.state.serverData.user.playlists.map((playlist) => {
-              return <Playlist playlist={playlist} />
-            })}
+            <Filter onTextChange={text =>
+              this.setState({ filterString: text })}
+            />
+            {serverData.user.playlists.filter(playlist =>
+              playlist.name.toLowerCase().includes(
+                this.state.filterString.toLowerCase()
+              )).map((playlist) => {
+                return <Playlist playlist={playlist} />
+              }
+            )}
           </div>
           :
           <h1 style={defaultStyle}>
